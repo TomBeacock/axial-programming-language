@@ -1,12 +1,14 @@
 module Main where
 
-import Parsers.Base (parse)
-import Parsers.Expr
 import System.Environment (getArgs)
+import Parsers.Base (parse)
+import Parsers.Program (program)
 
 main :: IO ()
 main = do
     args <- getArgs
     contents <- readFile (head args)
-    let [(x, xs)] = parse expr contents
-    print x
+    let res = case parse program contents of
+            (x, _):_ -> x
+            _otherwise -> error "Failed to parse program"
+    print res
