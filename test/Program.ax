@@ -1,3 +1,6 @@
-Int x = 5*10-5-2+(10/2);
-x = 40;
+func main () = 
+    var x Int = 5*10-5-2+(10/2);
+    var x = 40;
 end
+
+func add (a Int, b Int) = return a + b; end

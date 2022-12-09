@@ -1,15 +1,16 @@
 module Parsers.Expr (Expr(..), expr) where
 
 import GHC.Base ((<|>), many)
-import Parsers.Base
+import Parsers.Base ( Parser, Identifier, char, item, itemWhere, natural, real, symbol, token, identifier)
 
 -- Expr
-data Expr = Literal Int | Unary UnaryOperator Expr | Binary BinaryOperator Expr Expr
+data Expr = Literal Int | Identifier Identifier | Unary UnaryOperator Expr | Binary BinaryOperator Expr Expr
 data UnaryOperator = Pos | Neg
 data BinaryOperator = Add | Sub | Mul | Div | Mod
 
 instance Show Expr where
     show (Literal n) = show n
+    show (Identifier id) = id
     show (Unary op a) = show op ++ show a
     show (Binary op a b) = show a ++ show op ++ show b
 
@@ -26,16 +27,13 @@ instance Show BinaryOperator where
 
 -- Expr parsers
 expr :: Parser Expr
-expr = arithmetic
-
-arithmetic :: Parser Expr
-arithmetic = arithmetic' id
+expr = expr' id
     where
-        arithmetic' f = do
+        expr' f = do
             x <- term
             do
-                symbol "+"; arithmetic' (optimize . Binary Add (f x))
-                <|> do symbol "-"; arithmetic' (optimize . Binary Sub (f x))
+                symbol "+"; expr' (optimize . Binary Add (f x))
+                <|> do symbol "-"; expr' (optimize . Binary Sub (f x))
                 <|> return (optimize (f x))
 
 term :: Parser Expr
@@ -55,6 +53,7 @@ factor = do
     <|> do symbol "-"; x <- Unary Neg <$> factor; return (optimize x)
     <|> do symbol "("; x <- expr; symbol ")"; return (optimize x)
     <|> Literal <$> intLiteral
+    <|> Identifier <$> identifier
 
 optimize :: Expr -> Expr
 optimize (Unary op (Literal a)) = let f = unaryFunctionOf op in Literal $ f a

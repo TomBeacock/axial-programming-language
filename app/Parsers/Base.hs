@@ -6,6 +6,7 @@ import Data.Char (isSpace, isDigit)
 
 -- Parser type
 newtype Parser a = P (String -> [(a, String)])
+type Identifier = String
 
 parse :: Parser a -> String ->  [(a, String)]
 parse (P p) = p
@@ -55,6 +56,16 @@ string (x:xs) = do c <- char x; s <- string xs; return (c:s)
 symbol :: String -> Parser String
 symbol xs = do space; ys <- string xs; space; return ys
 
+separated :: Parser a -> String -> Parser [a]
+separated p s = do
+            x <- p
+            do
+                symbol s
+                xs <- separated p s
+                return (x:xs)
+            <|> return []
+        
+
 digit :: Parser Char
 digit = itemWhere isDigit
 
@@ -69,3 +80,18 @@ real = do
         <|> return (read xs)
     <|> do
         char '.'; xs <- some digit; return (read ("." ++ xs))
+
+identifier :: Parser Identifier
+identifier = do token identifier'
+    where
+        identifier' = do
+            xs <- many $ itemWhere (== '_')
+            y <- itemWhere isAsciiAlpha
+            zs <- many $ itemWhere (\c -> isAsciiAlphaNum c || c == '_')
+            return (xs ++ [y] ++ zs)
+
+isAsciiAlpha :: Char -> Bool
+isAsciiAlpha c = c `elem` ['a'..'z'] || c `elem` ['A'..'Z']
+
+isAsciiAlphaNum :: Char -> Bool
+isAsciiAlphaNum c = isAsciiAlpha c || c `elem` ['0'..'9']
