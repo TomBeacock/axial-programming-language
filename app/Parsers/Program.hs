@@ -37,9 +37,9 @@ instance Show Parameter where
 instance Show Statement where
     show (Declaration d) = show d
     show (Assign id e) = id ++ " = " ++ show e ++ ";"
-    show (If e b) = "if " ++ show e ++ " then " ++ show b ++ "end"
-    show (IfElse e b b') = "if " ++ show e ++ " then " ++ show b ++ "else" ++ show b' ++ "end"
-    show (While e b) = "while" ++ show e ++ " do " ++ show b ++ "end"
+    show (If e b) = "if " ++ show e ++ " then " ++ show b ++ " end"
+    show (IfElse e b b') = "if " ++ show e ++ " then " ++ show b ++ "else" ++ show b' ++ " end"
+    show (While e b) = "while " ++ show e ++ " do " ++ show b ++ " end"
     show (Return e) = "return " ++ show e ++ ";"
 
 instance Show Declaration where
@@ -60,7 +60,7 @@ function = do
     symbol "func"
     id <- identifier
     symbol "("
-    params <- parameters
+    params <- separated parameter ","
     symbol ")"
     do
         symbol "->"
@@ -75,17 +75,10 @@ function = do
             symbol "end"
             return (Procedure id params b)
 
-parameters :: Parser [Parameter]
-parameters = (do
+parameter :: Parser Parameter
+parameter = do
     id <- identifier
-    t <- varType
-    let param = Parameter id t
-    do
-        symbol ","
-        params <- parameters
-        return (param : params)
-        <|> return [param])
-    <|> return []
+    Parameter id <$> varType
 
 block :: Parser Block
 block = some statement

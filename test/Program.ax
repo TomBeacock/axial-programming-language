@@ -1,6 +1,26 @@
 func main () = 
     var x Int = 5*10-5-2+(10/2);
     var x = 40;
+
+    if x + 5 then
+        if x + 6 then
+            x = 10;
+        end
+    else if x + 2 then
+        x = x + 2;
+    else
+        x = 10;
+    end
 end
 
 func add (a Int, b Int) = return a + b; end
+
+func fibonaci (n Int) -> Int =
+    var x = 1;
+    var i = n;
+    while i >= 1 do
+        x = x * i;
+        i = i - 1;
+    end
+    return x;
+end

@@ -57,14 +57,14 @@ symbol :: String -> Parser String
 symbol xs = do space; ys <- string xs; space; return ys
 
 separated :: Parser a -> String -> Parser [a]
-separated p s = do
+separated p s = (do
             x <- p
             do
                 symbol s
                 xs <- separated p s
                 return (x:xs)
+                <|> return [x])
             <|> return []
-        
 
 digit :: Parser Char
 digit = itemWhere isDigit
